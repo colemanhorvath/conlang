@@ -1,8 +1,7 @@
 //TODO update data structure and generateKey method to actually generate and keep track of unique keys
 import React, { useState, useLayoutEffect } from 'react';
-import { Text, View, Button, Modal, StyleSheet } from 'react-native';
+import { Text, View, Button, Modal, StyleSheet, SafeAreaView } from 'react-native';
 import { FlatList, Switch, TextInput, TouchableOpacity } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { generate } from '../reference/Generator';
 import { save } from '../reference/Storage';
 
@@ -52,6 +51,7 @@ function LexiconScreen({ route, navigation }) {
   const Item = ({ current, secondary, k }) => {
     return (
       <TouchableOpacity
+        style={styles.entry}
         onPress={() => {
           if (lexiconIsSortedByEnglish) {
             setConlangAddition(secondary);
@@ -64,8 +64,8 @@ function LexiconScreen({ route, navigation }) {
           setModalVisible(true);
         }}
       >
-        <Text>{current}: {secondary}</Text>
-        <Text>Key: {k}</Text>
+        <Text style={styles.current}>{current}</Text>
+        <Text style={styles.secondary}>{secondary}</Text>
       </TouchableOpacity>
     )
   }
@@ -133,16 +133,19 @@ function LexiconScreen({ route, navigation }) {
   }
 
   return (
-    <View>
-      <Text>Lexicon Screen</Text>
-      <Text>Currently editing: {title}</Text>
-      <Text>{description}</Text>
-      <Text>Toggle which language is used for sorting:</Text>
-      <Switch
-        onValueChange={toggleSwitch}
-        value={lexiconIsSortedByEnglish} />
+    <SafeAreaView style={{ flex: 1 }}>
+      <Text style={styles.title}>{title}</Text>
+      <View style={styles.toggleView}>
+        <Text>Sort by </Text>
+        <Text style={lexiconIsSortedByEnglish ? styles.untoggledText : styles.toggledText}>{title}</Text>
+        <Switch
+          style={{ margin: 5 }}
+          onValueChange={toggleSwitch}
+          value={lexiconIsSortedByEnglish} />
+        <Text style={lexiconIsSortedByEnglish ? styles.toggledText : styles.untoggledText}>English</Text>
+      </View>
       <TextInput
-        style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
+        style={styles.searchBar}
         value={search}
         autoCorrect={false}
         autoCapitalize={'none'}
@@ -182,24 +185,17 @@ function LexiconScreen({ route, navigation }) {
             onPress={() => setModalVisible(false)} />
         </SafeAreaView>
       </Modal>
-      <Button
-        title='Add entry'
+      <TouchableOpacity
+        style={styles.plusButton}
         onPress={() => {
           setConlangAddition('');
           setEnglishAddition('');
           setCurrentKey(-1);
           setModalVisible(true);
-        }} />
-      <Button
-        title='Save'
-        onPress={() => save(key, route.params)} />
-      <Button
-        title='Print params'
-        onPress={() => console.log(route.params)} />
-      <Button
-        title='Back'
-        onPress={() => navigation.goBack()} />
-    </View>
+        }}>
+        <Text style={styles.plus}>+</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
   )
 }
 
@@ -209,6 +205,63 @@ const styles = StyleSheet.create({
     fontSize: 18,
     padding: 4
   },
+  plusButton: {
+    padding: 0,
+    height: 70,
+    width: 70,
+    margin: 10,
+    borderRadius: 35,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    shadowColor: 'black',
+    shadowOffset: { height: 2, width: 2 }
+  },
+  plus: {
+    fontSize: 50,
+    fontWeight: 'bold',
+    color: 'mediumaquamarine'
+  },
+  title: {
+    color: 'mediumaquamarine',
+    fontSize: 24,
+    fontWeight: 'bold',
+    alignSelf: 'center'
+  },
+  toggledText: {
+    fontWeight: 'bold'
+  },
+  untoggledText: {
+    color: 'gray',
+    margin: 5
+  },
+  toggleView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    margin: 5
+  },
+  searchBar: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 15,
+    padding: 5,
+    margin: 5
+  },
+  entry: {
+    borderWidth: 1,
+    borderColor: 'gray',
+    marginLeft: 5,
+    marginRight: 5
+  },
+  current: {
+    fontWeight: 'bold'
+  },
+  secondary: {
+    color: 'gray'
+  }
 })
 
 export default LexiconScreen;
