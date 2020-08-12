@@ -1,4 +1,5 @@
 //TODO update data structure and generateKey method to actually generate and keep track of unique keys
+//TODO add a notes field to each entry
 import React, { useState, useLayoutEffect } from 'react';
 import { Text, View, Button, Modal, StyleSheet, SafeAreaView } from 'react-native';
 import { FlatList, Switch, TextInput, TouchableOpacity } from 'react-native-gesture-handler';
@@ -24,6 +25,8 @@ function LexiconScreen({ route, navigation }) {
   const [conlangAddition, setConlangAddition] = useState('');
   const [englishAddition, setEnglishAddition] = useState('');
   const [currentKey, setCurrentKey] = useState(-1);
+  const [conlangIsFocused, setConlangIsFocused] = useState(false);
+  const [englishIsFocused, setEnglishIsFocused] = useState(false);
 
   // This Effect creates a Save button in the navigation bar
   useLayoutEffect(() => {
@@ -155,35 +158,50 @@ function LexiconScreen({ route, navigation }) {
       <Modal
         visible={modalVisible}
         animationType='slide'>
-        <SafeAreaView>
-          <Text>Word in {title}:</Text>
-          <TextInput
-            style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
-            value={conlangAddition}
-            autoCorrect={false}
-            autoCapitalize={'none'}
-            onChangeText={text => setConlangAddition(text)} />
-          <Text>Meaning in English:</Text>
-          <TextInput
-            style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
-            value={englishAddition}
-            autoCorrect={false}
-            autoCapitalize={'none'}
-            onChangeText={text => setEnglishAddition(text)} />
-          <Button
-            title='Generate Random word'
-            onPress={() => setConlangAddition(generate(sylStructures, inventory))} />
-          <Button
-            title='Save'
-            onPress={() => {
-              updateLex(conlangAddition, englishAddition, currentKey);
-              updateSearch('');
-              setModalVisible(false);
-            }} />
-          <Button
-            title='Cancel'
-            onPress={() => setModalVisible(false)} />
-        </SafeAreaView>
+        <View>
+          <View style={styles.modalHeader}>
+            <SafeAreaView style={styles.buttonWrapper}>
+              <TouchableOpacity
+                style={{ padding: 5 }}
+                onPress={() => {
+                  setModalVisible(false)
+                }}>
+                <Text style={styles.button}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{ padding: 5 }}
+                onPress={() => setModalVisible(false)}>
+                <Text style={styles.button}>Save</Text>
+              </TouchableOpacity>
+            </SafeAreaView>
+          </View>
+          <Text style={styles.inputLabel}>Word in {title}:</Text>
+          <View style={styles.conlangInputWrapper}>
+            <TextInput
+              style={conlangIsFocused ? { ...styles.input, ...styles.focusedInput } : styles.input}
+              value={conlangAddition}
+              autoCorrect={false}
+              autoCapitalize={'none'}
+              onFocus={() => setConlangIsFocused(true)}
+              onBlur={() => setConlangIsFocused(false)}
+              onChangeText={text => setConlangAddition(text)} />
+            <TouchableOpacity
+              onPress={() => setConlangAddition(generate(sylStructures, inventory))}>
+              <Text style={styles.random}>Random</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.inputLabel}>Meaning in English:</Text>
+          <View style={{ flexDirection: 'row' }}>
+            <TextInput
+              style={englishIsFocused ? { ...styles.input, ...styles.focusedInput } : styles.input}
+              value={englishAddition}
+              autoCorrect={false}
+              autoCapitalize={'none'}
+              onFocus={() => setEnglishIsFocused(true)}
+              onBlur={() => setEnglishIsFocused(false)}
+              onChangeText={text => setEnglishAddition(text)} />
+          </View>
+        </View>
       </Modal>
       <TouchableOpacity
         style={styles.plusButton}
@@ -261,6 +279,53 @@ const styles = StyleSheet.create({
   },
   secondary: {
     color: 'gray'
+  },
+  modalHeader: {
+    height: 80,
+    backgroundColor: 'mediumaquamarine'
+  },
+  buttonWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  button: {
+    color: 'white',
+    fontSize: 18,
+    padding: 5
+  },
+  inputLabel: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    margin: 10,
+    marginBottom: 0
+  },
+  input: {
+    flex: 1,
+    backgroundColor: 'white',
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 10,
+    margin: 10,
+    padding: 5
+  },
+  focusedInput: {
+    borderColor: 'mediumaquamarine',
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    shadowColor: 'black',
+    shadowOffset: { height: 2, width: 2 },
+  },
+  conlangInputWrapper: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  random: {
+    color: 'mediumaquamarine',
+    fontWeight: 'bold',
+    margin: 5,
+    fontSize: 16
   }
 })
 
