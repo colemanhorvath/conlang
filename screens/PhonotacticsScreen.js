@@ -1,11 +1,43 @@
 import React, { useState, useLayoutEffect } from 'react';
-import { Text, View, Button, SectionList, StyleSheet } from 'react-native';
+import { Text, View, Button, SectionList, StyleSheet, FlatList } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { save } from '../reference/Storage';
 
+const addButtonData = [{ string: 'C', index: 0, key: 'reqOnset' }, { string: '(C)', index: 0, key: 'optOnset' }, { string: 'V', index: 1, key: 'reqNucleus' }, { string: '(V)', index: 1, key: 'optNucleus' }, { string: 'C', index: 2, key: 'reqCoda' }, { string: 'C', index: 2, key: 'optCoda' },]
+
+const removeButtonData = [{ index: 0, key: 'delOnset' }, { index: 1, key: 'delNucleus' }, { index: 2, key: 'delCoda' }]
+
+const labels = [{ label: 'Onset:', key: '0' }, { label: 'Nucleus:', key: '1' }, { label: 'Coda:', key: '2' }];
+
 function PhonotacticsScreen({ route, navigation }) {
   const { key, title, description, sylStructure, sylStructures } = route.params
+
+  const AddButton = ({ string, index }) => {
+    return (
+      <TouchableOpacity
+        style={{ ...styles.button, height: 50, width: 50 }}
+        onPress={() => {
+          let newStruct = sylStructure[index] + string;
+          let syl = [...sylStructure];
+          syl[index] = newStruct;
+          updateCurrentLang(syl, index);
+          navigation.setParams({ sylStructure: syl });
+        }}>
+        <Text style={styles.addButtonText}>{string}</Text>
+      </TouchableOpacity>
+    )
+  }
+
+  const RemoveButton = ({ index }) => {
+    return (
+      <TouchableOpacity
+        style={{ ...styles.button, height: 30, width: 50 }}
+        onPress={() => removeElement(index)}>
+        <Text style={styles.removeButtonText}>⌫</Text>
+      </TouchableOpacity>
+    )
+  }
 
   // This Effect creates a Save button in the navigation bar
   useLayoutEffect(() => {
@@ -132,82 +164,34 @@ function PhonotacticsScreen({ route, navigation }) {
 
   return (
     <View>
-      <Text>Phonotactics Screen</Text>
-      <Text>Currently editing: {title}</Text>
-      <Text>{description}</Text>
-      <Text>{'Current syllable structure:' + sylStructure.join('')} </Text>
-      <Button
-        title='Add onset C'
-        onPress={() => {
-          let syl = [sylStructure[0] + 'C', sylStructure[1], sylStructure[2]];
-          updateCurrentLang(syl, 0);
-          navigation.setParams({ sylStructure: syl });
-        }} />
-      <Button
-        title='Add optional onset (C)'
-        onPress={() => {
-          let syl = [sylStructure[0] + '(C)', sylStructure[1], sylStructure[2]];
-          updateCurrentLang(syl, 0);
-          navigation.setParams({ sylStructure: syl });
-        }} />
-      <Button
-        title='Add vowel V'
-        onPress={() => {
-          let syl = [sylStructure[0], sylStructure[1] + 'V', sylStructure[2]];
-          updateCurrentLang(syl, 1);
-          navigation.setParams({ sylStructure: syl });
-        }} />
-      <Button
-        title='Add optional vowel (V)'
-        onPress={() => {
-          let syl = [sylStructure[0], sylStructure[1] + '(V)', sylStructure[2]];
-          updateCurrentLang(syl, 1);
-          navigation.setParams({ sylStructure: syl });
-        }} />
-      <Button
-        title='Add coda consonant C'
-        onPress={() => {
-          let syl = [sylStructure[0], sylStructure[1], sylStructure[2] + 'C'];
-          updateCurrentLang(syl, 2);
-          navigation.setParams({ sylStructure: syl });
-        }} />
-      <Button
-        title='Add optional coda consonant (C)'
-        onPress={() => {
-          let syl = [sylStructure[0], sylStructure[1], sylStructure[2] + '(C)'];
-          updateCurrentLang(syl, 2);
-          navigation.setParams({ sylStructure: syl });
-        }} />
-      <Button
-        title='Remove onset consonant'
-        onPress={() => {
-          removeElement(0);
-        }} />
-      <Button
-        title='Remove vowel'
-        onPress={() => {
-          removeElement(1);
-        }} />
-      <Button
-        title='Remove coda consonant'
-        onPress={() => {
-          removeElement(2);
-        }} />
-      <Button
-        title='Clear Syllable Structure'
-        onPress={() => {
-          let syl = ['', '', ''];
-          updateCurrentLang(syl, 0);
-          updateCurrentLang(syl, 1);
-          updateCurrentLang(syl, 2);
-          navigation.setParams({ sylStructure: syl });
-        }} />
-      <Button
-        title='Save'
-        onPress={() => save(key, route.params)} />
-      <Button
-        title='Back'
-        onPress={() => navigation.goBack()} />
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.structLabel}>Current syllable structure:</Text>
+      <View style={styles.structView}>
+        <Text style={styles.currentSylStruct}>{sylStructure.join('|')} </Text>
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={() => {
+            let syl = ['', '', ''];
+            updateCurrentLang(syl, 0);
+            updateCurrentLang(syl, 1);
+            updateCurrentLang(syl, 2);
+            navigation.setParams({ sylStructure: syl });
+          }}>
+          <Text style={styles.clearText}>X</Text>
+        </TouchableOpacity>
+      </View>
+      <FlatList
+        contentContainerStyle={styles.buttonList}
+        data={labels}
+        renderItem={({ item }) => <Text style={styles.label}>{item.label}</Text>} />
+      <FlatList
+        contentContainerStyle={styles.buttonList}
+        data={addButtonData}
+        renderItem={({ item }) => <AddButton string={item.string} index={item.index} />} />
+      <FlatList
+        contentContainerStyle={styles.buttonList}
+        data={removeButtonData}
+        renderItem={({ item }) => <RemoveButton index={item.index} />} />
       <SectionList
         sections={sylStructures}
         renderItem={({ item, section, index }) =>
@@ -230,6 +214,82 @@ const styles = StyleSheet.create({
     fontSize: 18,
     padding: 4
   },
+  button: {
+    backgroundColor: 'white',
+    shadowOpacity: 0.75,
+    shadowRadius: 3,
+    shadowColor: 'black',
+    shadowOffset: { height: 2, width: 2 },
+    borderWidth: 1,
+    borderColor: 'black',
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 3
+  },
+  buttonList: {
+    flexDirection: 'row',
+    justifyContent: 'space-around'
+  },
+  addButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'mediumaquamarine'
+  },
+  removeButtonText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: 'red'
+  },
+  clearText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18
+  },
+  title: {
+    color: 'mediumaquamarine',
+    fontSize: 24,
+    fontWeight: 'bold',
+    alignSelf: 'center'
+  },
+  structLabel: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    alignSelf: 'center'
+  },
+  currentSylStruct: {
+    width: '90%',
+    textAlign: 'center',
+    fontSize: 32,
+    fontWeight: 'bold'
+  },
+  label: {
+    width: 70,
+    fontStyle: 'italic',
+    color: 'mediumaquamarine',
+    fontWeight: 'bold',
+    textAlign: 'center'
+  },
+  structView: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  clearButton: {
+    height: 30,
+    width: 30,
+    backgroundColor: 'red',
+    shadowOpacity: 0.75,
+    shadowRadius: 3,
+    shadowColor: 'black',
+    shadowOffset: { height: 2, width: 2 },
+    borderWidth: 1,
+    borderColor: 'black',
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 3,
+    marginTop: 3
+  }
 })
 
 export default PhonotacticsScreen;
