@@ -1,10 +1,9 @@
 import React, { useState, useLayoutEffect } from 'react';
-import { Text, View, Button, SectionList, StyleSheet, FlatList } from 'react-native';
+import { Text, View, Button, SectionList, StyleSheet, FlatList, Alert } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { save } from '../reference/Storage';
 
-const addButtonData = [{ string: 'C', index: 0, key: 'reqOnset' }, { string: '(C)', index: 0, key: 'optOnset' }, { string: 'V', index: 1, key: 'reqNucleus' }, { string: '(V)', index: 1, key: 'optNucleus' }, { string: 'C', index: 2, key: 'reqCoda' }, { string: 'C', index: 2, key: 'optCoda' },]
+const addButtonData = [{ string: 'C', index: 0, key: 'reqOnset' }, { string: '(C)', index: 0, key: 'optOnset' }, { string: 'V', index: 1, key: 'reqNucleus' }, { string: '(V)', index: 1, key: 'optNucleus' }, { string: 'C', index: 2, key: 'reqCoda' }, { string: '(C)', index: 2, key: 'optCoda' },]
 
 const removeButtonData = [{ index: 0, key: 'delOnset' }, { index: 1, key: 'delNucleus' }, { index: 2, key: 'delCoda' }]
 
@@ -156,9 +155,9 @@ function PhonotacticsScreen({ route, navigation }) {
   // title: the written form of the structure variant (e.g. CC)
   const Item = ({ title }) => {
     return (
-      <SafeAreaView>
-        <Text>{title}</Text>
-      </SafeAreaView>
+      <View style={{ borderWidth: 1, padding: 3 }}>
+        <Text style={{ fontSize: 16 }}>{title}</Text>
+      </View>
     )
   }
 
@@ -192,15 +191,26 @@ function PhonotacticsScreen({ route, navigation }) {
         contentContainerStyle={styles.buttonList}
         data={removeButtonData}
         renderItem={({ item }) => <RemoveButton index={item.index} />} />
+      <View style={styles.structView}>
+        <Text style={styles.variantsLabel}>Syllable Structure Variants:</Text>
+        <TouchableOpacity
+          style={{ ...styles.clearButton, backgroundColor: 'blue' }}
+          onPress={() => Alert.alert('Select each Syllable Structure Variant to specify its specific phonotactics')}>
+          <Text style={styles.clearText}>i</Text>
+        </TouchableOpacity>
+      </View>
       <SectionList
         sections={sylStructures}
+        contentContainerStyle={{ borderWidth: 1, margin: 5 }}
         renderItem={({ item, section, index }) =>
           <TouchableOpacity
             onPress={() => navigation.push('Syllable', { ...route.params, ...section, index: index })}>
             < Item title={item.type} />
           </TouchableOpacity>}
         renderSectionHeader={({ section: { title } }) => (
-          <Text>{title}</Text>
+          <View style={styles.header}>
+            <Text style={styles.headerText}>{title}</Text>
+          </View>
         )}
         keyExtractor={(item, index) => index}
       />
@@ -272,7 +282,9 @@ const styles = StyleSheet.create({
   },
   structView: {
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 3
   },
   clearButton: {
     height: 30,
@@ -286,9 +298,22 @@ const styles = StyleSheet.create({
     borderColor: 'black',
     borderRadius: 15,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 3,
-    marginTop: 3
+    alignItems: 'center'
+  },
+  header: {
+    backgroundColor: 'white',
+    borderWidth: 1,
+    padding: 3
+  },
+  headerText: {
+    fontSize: 20,
+    fontWeight: 'bold'
+  },
+  variantsLabel: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    margin: 5,
+    marginTop: 20
   }
 })
 

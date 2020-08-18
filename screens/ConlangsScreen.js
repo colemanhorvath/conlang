@@ -580,17 +580,17 @@ function ConlangsScreen({ navigation }) {
       sylStructures: [
         {
           key: 'o',
-          title: "onsets",
+          title: "Onsets",
           data: []
         },
         {
           key: 'n',
-          title: "nuclei",
+          title: "Nuclei",
           data: []
         },
         {
           key: 'c',
-          title: "codas",
+          title: "Codas",
           data: []
         }
       ],
