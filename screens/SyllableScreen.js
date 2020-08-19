@@ -11,9 +11,20 @@ import { generatePossibleStructures } from '../reference/Generator';
 
 const features = ['+consonantal', '-consonantal', '+syllabic', '-syllabic', '+sonorant', '-sonorant']
 
+const getCategory = (key) => {
+  switch (key) {
+    case 'o': return 'Onset'
+      break;
+    case 'n': return 'Nucleus'
+      break;
+    case 'c': return 'Coda'
+  }
+}
+
 function SyllableScreen({ route, navigation }) {
-  const { key, title, description, data, index, inventory } = route.params;
+  const { key, secKey, data, index, inventory } = route.params;
   const currentStruct = data[index];
+  const category = getCategory(secKey);
 
   const [isInManual, setIsInManual] = useState(currentStruct.isManual);
   const [manualEntry, setManualEntry] = useState(currentStruct.manualEntries.join());
@@ -94,7 +105,7 @@ function SyllableScreen({ route, navigation }) {
     }
     else {
       return (
-        <SafeAreaView>
+        <View>
           <FlatList
             data={currentStruct.features}
             keyExtractor={({ index }) => index}
@@ -117,21 +128,21 @@ function SyllableScreen({ route, navigation }) {
                 'With these features, these structures are allowed: '.concat(generatePossibleStructures(currentStruct, inventory).toString())
               )
             }} />
-        </SafeAreaView>
+        </View>
       )
     }
   }
 
   return (
-    <View>
-      <Text>Syllable Screen</Text>
-      <Text>Currently editing: {title}</Text>
-      <Text>{description}</Text>
-      <Text>Current syllable element: {currentStruct.type}</Text>
-      <Switch
-        onValueChange={toggleSwitch}
-        value={isInManual} />
-      <Text>{isInManual ? "Manual Entry Mode" : "Feature Entry Mode"}</Text>
+    <View style={{}}>
+      <Text style={styles.title}>{category + ' ' + currentStruct.type}</Text>
+      <View style={styles.toggleView}>
+        <Text style={isInManual ? styles.toggledText : styles.untoggledText}>Manual Entry Mode</Text>
+        <Switch
+          onValueChange={toggleSwitch}
+          value={isInManual} />
+        <Text style={isInManual ? styles.untoggledText : styles.toggledText}>Feature Entry Mode</Text>
+      </View>
       {getCurrentView()}
       <Button
         title='Print params'
@@ -157,6 +168,24 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 18,
     padding: 4
+  },
+  toggledText: {
+    fontWeight: 'bold'
+  },
+  untoggledText: {
+    color: 'gray',
+    margin: 5
+  },
+  toggleView: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    margin: 5
+  },
+  title: {
+    color: 'mediumaquamarine',
+    fontSize: 24,
+    fontWeight: 'bold',
+    alignSelf: 'center'
   },
 })
 

@@ -204,8 +204,8 @@ function PhonotacticsScreen({ route, navigation }) {
         contentContainerStyle={{ borderWidth: 1, margin: 5 }}
         renderItem={({ item, section, index }) =>
           <TouchableOpacity
-            onPress={() => navigation.push('Syllable', { ...route.params, ...section, index: index })}>
-            < Item title={item.type} />
+            onPress={() => navigation.push('Syllable', { ...route.params, data: section.data, index: index, secKey: section.key })}>
+            <Item title={item.type} />
           </TouchableOpacity>}
         renderSectionHeader={({ section: { title } }) => (
           <View style={styles.header}>
