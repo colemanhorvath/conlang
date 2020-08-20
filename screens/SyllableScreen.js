@@ -11,6 +11,18 @@ import { generatePossibleStructures } from '../reference/Generator';
 
 const features = ['+consonantal', '-consonantal', '+syllabic', '-syllabic', '+sonorant', '-sonorant']
 
+const toFlatListData = (arr) => {
+  let data = []
+  let f;
+  for (f of arr) {
+    data.push({
+      value: f,
+      key: f
+    });
+  }
+  return data;
+}
+
 const getCategory = (key) => {
   switch (key) {
     case 'o': return 'Onset'
@@ -55,7 +67,7 @@ function SyllableScreen({ route, navigation }) {
   }
 
   const Item = ({ ind }) => {
-    const [selectedFeatures, setSelectedFeatures] = useState(currentStruct.features[ind].toString());
+    const [selectedFeatures, setSelectedFeatures] = useState(toFlatListData(currentStruct.features[ind]));
 
     const updateFeatures = (index, feature) => {
       let currentArr = currentStruct.features[ind];
@@ -65,16 +77,19 @@ function SyllableScreen({ route, navigation }) {
       } else {
         currentArr.splice(i, 1);
       }
-      setSelectedFeatures(currentArr.toString());
+      setSelectedFeatures(toFlatListData(currentArr));
     }
 
     return (
       <View>
-        <Text>Select Features for {currentStruct.type.includes('C') ? "Consonant" : "Vowel"} #{ind + 1}:</Text>
+        <Text>{currentStruct.type.includes('C') ? 'C' : 'V'} #{ind + 1}:</Text>
         <ModalDropdown
           options={features}
           onSelect={updateFeatures} />
-        <Text>Current Features: {selectedFeatures}</Text>
+        <FlatList
+          listKey={ind.toString()}
+          data={selectedFeatures}
+          renderItem={({ item }) => <Text>{item.value}</Text>} />
       </View>
     )
   }
@@ -87,14 +102,20 @@ function SyllableScreen({ route, navigation }) {
   }
 
   const getCurrentView = () => {
+    const [isFocused, setIsFocused] = useState(false);
+
     if (isInManual) {
       return (
-        <View>
-          <Text>Please enter all possible syllables:</Text>
+        <View style={styles.modeView}>
+          <Text style={styles.label}>Please enter all possible syllables:</Text>
           <TextInput
-            style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
+            style={isFocused ? { ...styles.input, ...styles.focusedInput, height: '50%' } : { ...styles.input, height: '50%' }}
             value={manualEntry}
             autoCorrect={false}
+            placeholder={'pl,pr,kl,kr,...'}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            multiline={true}
             onChangeText={text => {
               currentStruct.manualEntries = text.split(",");
               formatEntries(currentStruct.manualEntries);
@@ -105,16 +126,20 @@ function SyllableScreen({ route, navigation }) {
     }
     else {
       return (
-        <View>
+        <View style={styles.modeView}>
           <FlatList
+            contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap' }}
             data={currentStruct.features}
             keyExtractor={({ index }) => index}
             renderItem={({ index }) => <Item ind={index} />} />
-          <Text>Exceptions:</Text>
+          <Text style={styles.label}>Exceptions:</Text>
           <TextInput
-            style={{ height: 40, borderColor: 'gray', borderWidth: 1 }}
+            style={isFocused ? { ...styles.input, ...styles.focusedInput, height: '25%' } : { ...styles.input, height: '25%' }}
             value={exceptionEntry}
             autoCorrect={false}
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            multiline={true}
             onChangeText={text => {
               currentStruct.exceptions = text.split(",");
               formatEntries(currentStruct.exceptions);
@@ -137,11 +162,11 @@ function SyllableScreen({ route, navigation }) {
     <View style={{}}>
       <Text style={styles.title}>{category + ' ' + currentStruct.type}</Text>
       <View style={styles.toggleView}>
-        <Text style={isInManual ? styles.toggledText : styles.untoggledText}>Manual Entry Mode</Text>
+        <Text style={isInManual ? styles.untoggledText : styles.toggledText}>Feature Entry Mode</Text>
         <Switch
           onValueChange={toggleSwitch}
           value={isInManual} />
-        <Text style={isInManual ? styles.untoggledText : styles.toggledText}>Feature Entry Mode</Text>
+        <Text style={isInManual ? styles.toggledText : styles.untoggledText}>Manual Entry Mode</Text>
       </View>
       {getCurrentView()}
       <Button
@@ -186,6 +211,31 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     alignSelf: 'center'
+  },
+  label: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    margin: 10,
+    marginBottom: 0
+  },
+  modeView: {
+    padding: 10
+  },
+  input: {
+    backgroundColor: 'white',
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 10,
+    margin: 10,
+    padding: 5
+  },
+  focusedInput: {
+    borderColor: 'mediumaquamarine',
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    shadowColor: 'black',
+    shadowOffset: { height: 2, width: 2 },
   },
 })
 
