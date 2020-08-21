@@ -1,11 +1,11 @@
 //TODO Add checks to see if the sounds they pick are in their language
 //TODO get rid of the crappy dropdown, make your own modal
 //TODO relocate the features array to a constant in the Sounds module
+//TODO make a ScrollView instead of FlatList
 import React, { useState, useLayoutEffect } from 'react';
-import { Text, View, Button, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { Text, View, Button, StyleSheet, TouchableOpacity, Alert, ScrollView, Modal, SafeAreaView } from 'react-native';
 import { TextInput, Switch, FlatList } from 'react-native-gesture-handler';
 import ModalDropdown from 'react-native-modal-dropdown';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { save } from '../reference/Storage';
 import { generatePossibleStructures } from '../reference/Generator';
 
@@ -68,8 +68,18 @@ function SyllableScreen({ route, navigation }) {
 
   const Item = ({ ind }) => {
     const [selectedFeatures, setSelectedFeatures] = useState(toFlatListData(currentStruct.features[ind]));
+    const [modalVisible, setModalVisible] = useState(false);
 
-    const updateFeatures = (index, feature) => {
+    const FeatureSelection = ({ str }) => {
+      return (
+        <TouchableOpacity
+          onPress={() => updateFeatures(str)}>
+          <Text>{str}</Text>
+        </TouchableOpacity>
+      )
+    }
+
+    const updateFeatures = (feature) => {
       let currentArr = currentStruct.features[ind];
       let i = currentArr.indexOf(feature);
       if (i === -1) {
@@ -83,9 +93,25 @@ function SyllableScreen({ route, navigation }) {
     return (
       <View>
         <Text>{currentStruct.type.includes('C') ? 'C' : 'V'} #{ind + 1}:</Text>
-        <ModalDropdown
-          options={features}
-          onSelect={updateFeatures} />
+        <Modal
+          visible={modalVisible}
+          animationType={'slide'}>
+          <View>
+            <SafeAreaView style={styles.modalHeader}>
+              <TouchableOpacity
+                style={{ padding: 5 }}
+                onPress={() => setModalVisible(false)}>
+                <Text style={styles.button}>Done</Text>
+              </TouchableOpacity>
+            </SafeAreaView>
+            <FlatList
+              data={toFlatListData(features)}
+              renderItem={({ item }) => <FeatureSelection str={item.value} />} />
+          </View>
+        </Modal>
+        <Button
+          title={'Show Modal'}
+          onPress={() => setModalVisible(true)} />
         <FlatList
           listKey={ind.toString()}
           data={selectedFeatures}
@@ -99,6 +125,10 @@ function SyllableScreen({ route, navigation }) {
     for (i = 0; i < arr.length; i++) {
       arr[i] = arr[i].trim().toLowerCase();
     }
+  }
+
+  const getScrollView = (arr) => {
+
   }
 
   const getCurrentView = () => {
@@ -236,6 +266,15 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     shadowColor: 'black',
     shadowOffset: { height: 2, width: 2 },
+  },
+  modalHeader: {
+    height: 80,
+    backgroundColor: 'mediumaquamarine'
+  },
+  button: {
+    color: 'white',
+    fontSize: 18,
+    padding: 5,
   },
 })
 
