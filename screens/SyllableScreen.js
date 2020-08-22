@@ -106,16 +106,15 @@ function SyllableScreen({ route, navigation }) {
             </SafeAreaView>
             <FlatList
               data={toFlatListData(features)}
-              renderItem={({ item }) => <FeatureSelection str={item.value} />} />
+              renderItem={({ item }) => <FeatureSelection str={item.value} key={item.key} />} />
           </View>
         </Modal>
         <Button
           title={'Show Modal'}
           onPress={() => setModalVisible(true)} />
-        <FlatList
-          listKey={ind.toString()}
-          data={selectedFeatures}
-          renderItem={({ item }) => <Text>{item.value}</Text>} />
+        <ScrollView>
+          {selectedFeatures.map((item) => <Text key={item.key}>{item.value}</Text>)}
+        </ScrollView>
       </View>
     )
   }
@@ -125,10 +124,6 @@ function SyllableScreen({ route, navigation }) {
     for (i = 0; i < arr.length; i++) {
       arr[i] = arr[i].trim().toLowerCase();
     }
-  }
-
-  const getScrollView = (arr) => {
-
   }
 
   const getCurrentView = () => {
@@ -157,11 +152,10 @@ function SyllableScreen({ route, navigation }) {
     else {
       return (
         <View style={styles.modeView}>
-          <FlatList
-            contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap' }}
-            data={currentStruct.features}
-            keyExtractor={({ index }) => index}
-            renderItem={({ index }) => <Item ind={index} />} />
+          <ScrollView
+            contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            {currentStruct.features.map((item, index) => <Item ind={index} key={index.toString()} />)}
+          </ScrollView>
           <Text style={styles.label}>Exceptions:</Text>
           <TextInput
             style={isFocused ? { ...styles.input, ...styles.focusedInput, height: '25%' } : { ...styles.input, height: '25%' }}
