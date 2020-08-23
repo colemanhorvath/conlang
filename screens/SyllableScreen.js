@@ -41,6 +41,7 @@ function SyllableScreen({ route, navigation }) {
   const [isInManual, setIsInManual] = useState(currentStruct.isManual);
   const [manualEntry, setManualEntry] = useState(currentStruct.manualEntries.join());
   const [exceptionEntry, setExceptionEntry] = useState(currentStruct.exceptions.join());
+  const [focused, setFocused] = useState('');
 
   // This Effect creates a Save button in the navigation bar
   useLayoutEffect(() => {
@@ -64,6 +65,7 @@ function SyllableScreen({ route, navigation }) {
   const toggleSwitch = (newVal) => {
     currentStruct.isManual = newVal;
     setIsInManual(currentStruct.isManual);
+    setFocused('');
   }
 
   const Item = ({ ind }) => {
@@ -71,10 +73,14 @@ function SyllableScreen({ route, navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
 
     const FeatureSelection = ({ str }) => {
+      let currentArr = currentStruct.features[ind];
+      let isSelected = currentArr.indexOf(str) !== -1;
+
       return (
         <TouchableOpacity
+          style={isSelected ? styles.pressedButton : styles.unpressedButton}
           onPress={() => updateFeatures(str)}>
-          <Text>{str}</Text>
+          <Text style={isSelected ? styles.pressedButtonText : styles.unpressedButtonText}>{'[' + str + ']'}</Text>
         </TouchableOpacity>
       )
     }
@@ -91,8 +97,8 @@ function SyllableScreen({ route, navigation }) {
     }
 
     return (
-      <View>
-        <Text>{currentStruct.type.includes('C') ? 'C' : 'V'} #{ind + 1}:</Text>
+      <View style={{ borderWidth: 0 }}>
+        <Text style={styles.letterNumber}>{currentStruct.type.includes('C') ? 'C' : 'V'} #{ind + 1}:</Text>
         <Modal
           visible={modalVisible}
           animationType={'slide'}>
@@ -104,16 +110,19 @@ function SyllableScreen({ route, navigation }) {
                 <Text style={styles.button}>Done</Text>
               </TouchableOpacity>
             </SafeAreaView>
+            <Text style={{ ...styles.label, textAlign: 'center', marginBottom: 10 }} > Select all features for this sound</Text>
             <FlatList
               data={toFlatListData(features)}
               renderItem={({ item }) => <FeatureSelection str={item.value} key={item.key} />} />
           </View>
         </Modal>
-        <Button
-          title={'Show Modal'}
-          onPress={() => setModalVisible(true)} />
-        <ScrollView>
-          {selectedFeatures.map((item) => <Text key={item.key}>{item.value}</Text>)}
+        <TouchableOpacity
+          style={styles.modalButton}
+          onPress={() => setModalVisible(true)}>
+          <Text style={styles.modalButtonText}>Select Features</Text>
+        </TouchableOpacity>
+        <ScrollView contentContainerStyle={styles.featuresList}>
+          {selectedFeatures.map((item) => <Text style={styles.featureText} key={item.key}>{'[' + item.value + ']'}</Text>)}
         </ScrollView>
       </View>
     )
@@ -127,19 +136,18 @@ function SyllableScreen({ route, navigation }) {
   }
 
   const getCurrentView = () => {
-    const [isFocused, setIsFocused] = useState(false);
 
     if (isInManual) {
       return (
         <View style={styles.modeView}>
           <Text style={styles.label}>Please enter all possible syllables:</Text>
           <TextInput
-            style={isFocused ? { ...styles.input, ...styles.focusedInput, height: '50%' } : { ...styles.input, height: '50%' }}
+            style={focused === 'manual' ? { ...styles.input, ...styles.focusedInput, height: '50%' } : { ...styles.input, height: '50%' }}
             value={manualEntry}
             autoCorrect={false}
             placeholder={'pl,pr,kl,kr,...'}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onFocus={() => setFocused('manual')}
+            onBlur={() => setFocused('')}
             multiline={true}
             onChangeText={text => {
               currentStruct.manualEntries = text.split(",");
@@ -153,17 +161,18 @@ function SyllableScreen({ route, navigation }) {
       return (
         <View style={styles.modeView}>
           <ScrollView
-            contentContainerStyle={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            contentContainerStyle={styles.scrollWrapper}>
             {currentStruct.features.map((item, index) => <Item ind={index} key={index.toString()} />)}
           </ScrollView>
           <Text style={styles.label}>Exceptions:</Text>
           <TextInput
-            style={isFocused ? { ...styles.input, ...styles.focusedInput, height: '25%' } : { ...styles.input, height: '25%' }}
+            style={focused === 'exceptions' ? { ...styles.input, ...styles.focusedInput, height: '25%' } : { ...styles.input, height: '25%' }}
             value={exceptionEntry}
             autoCorrect={false}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onFocus={() => setFocused('exceptions')}
+            onBlur={() => setFocused('')}
             multiline={true}
+            placeholder={'pl,pr,kl,kr,...'}
             onChangeText={text => {
               currentStruct.exceptions = text.split(",");
               formatEntries(currentStruct.exceptions);
@@ -270,6 +279,63 @@ const styles = StyleSheet.create({
     fontSize: 18,
     padding: 5,
   },
+  scrollWrapper: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around'
+  },
+  letterNumber: {
+    textAlign: 'center',
+    fontWeight: 'bold',
+    fontSize: 18
+  },
+  modalButton: {
+    backgroundColor: 'mediumaquamarine',
+    height: 20,
+    width: 120,
+    borderRadius: 10,
+    justifyContent: 'center',
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    shadowColor: 'black',
+    shadowOffset: { height: 2, width: 2 },
+  },
+  modalButtonText: {
+    fontStyle: 'italic',
+    textAlign: 'center',
+    color: 'white',
+    fontWeight: 'bold'
+  },
+  featuresList: {
+    alignItems: 'center',
+    padding: 5
+  },
+  featureText: {
+    padding: 2
+  },
+  pressedButton: {
+    borderWidth: 1,
+    height: 40,
+    justifyContent: 'center',
+    backgroundColor: 'mediumaquamarine'
+  },
+  pressedButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+    padding: 4
+  },
+  unpressedButton: {
+    borderWidth: 1,
+    height: 40,
+    backgroundColor: 'white',
+    justifyContent: 'center'
+  },
+  unpressedButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    padding: 4
+  }
 })
 
 export default SyllableScreen;
