@@ -97,6 +97,9 @@ export const generatePossibleStructures = (form, inventory) => {
 
 
   let finalIndices = possibleSoundArrays.map(getFinalIndex);
+  if (finalIndices.indexOf(-1) !== -1) {
+    return [];
+  }
 
   while (!arraysAreEqual(indices, finalIndices)) {
     let combo = getCombo(indices, possibleSoundArrays);

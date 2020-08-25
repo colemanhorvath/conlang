@@ -1825,6 +1825,56 @@ export const SOUNDS = [
   }
 ]
 
+export const FEATURES = [
+  '+consonantal',
+  '-consonantal',
+  '+sonorant',
+  '-sonorant',
+  '+syllabic',
+  '-syllabic',
+  '+labial',
+  '-labial',
+  '+round',
+  '-round',
+  '+coronal',
+  '-coronal',
+  '+anterior',
+  '-anterior',
+  '+distributed',
+  '-distributed',
+  '+dorsal',
+  '-dorsal',
+  '+high',
+  '-high',
+  '+low',
+  '-low',
+  '+back',
+  '-back',
+  '+tense',
+  '-tense',
+  '+pharyngeal',
+  '-pharyngeal',
+  '+atr',
+  '-atr',
+  '+voice',
+  '-voice',
+  '+spreadglottis',
+  '-spreadglottis',
+  '+constrictedglottis',
+  '-constrictedglottis',
+  '+continuant',
+  '-continuant',
+  '+strident',
+  '-strident',
+  '+lateral',
+  '-lateral',
+  '+delayedrelease',
+  '-delayedrelease',
+  '+nasal',
+  '-nasal',
+  ]
+
+
 // getSoundsWithProperty(property) returns all sounds that match property
 const getSoundsWithProperty = (property) => {
   let propName = property[0];

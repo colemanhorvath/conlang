@@ -1,13 +1,12 @@
 //TODO Add checks to see if the sounds they pick are in their language
 //TODO get rid of the crappy dropdown, make your own modal
 //TODO relocate the features array to a constant in the Sounds module
-//TODO make a ScrollView instead of FlatList
 import React, { useState, useLayoutEffect } from 'react';
 import { Text, View, Button, StyleSheet, TouchableOpacity, Alert, ScrollView, Modal, SafeAreaView } from 'react-native';
 import { TextInput, Switch, FlatList } from 'react-native-gesture-handler';
-import ModalDropdown from 'react-native-modal-dropdown';
 import { save } from '../reference/Storage';
 import { generatePossibleStructures } from '../reference/Generator';
+import { FEATURES } from '../reference/Sounds'
 
 const features = ['+consonantal', '-consonantal', '+syllabic', '-syllabic', '+sonorant', '-sonorant']
 
@@ -31,6 +30,16 @@ const getCategory = (key) => {
       break;
     case 'c': return 'Coda'
   }
+}
+
+const hasEmptyFeatures = (struct) => {
+  let featureArr;
+  for (featureArr of struct.features) {
+    if (featureArr.length === 0) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function SyllableScreen({ route, navigation }) {
@@ -112,7 +121,7 @@ function SyllableScreen({ route, navigation }) {
             </SafeAreaView>
             <Text style={{ ...styles.label, textAlign: 'center', marginBottom: 10 }} > Select all features for this sound</Text>
             <FlatList
-              data={toFlatListData(features)}
+              data={toFlatListData(FEATURES)}
               renderItem={({ item }) => <FeatureSelection str={item.value} key={item.key} />} />
           </View>
         </Modal>
@@ -178,14 +187,28 @@ function SyllableScreen({ route, navigation }) {
               formatEntries(currentStruct.exceptions);
               setExceptionEntry(currentStruct.exceptions.join());
             }} />
-          <Button
-            title='Generate possible structures'
+          <TouchableOpacity
+            style={styles.generateButton}
             onPress={() => {
-              Alert.alert(
-                'Possible structures',
-                'With these features, these structures are allowed: '.concat(generatePossibleStructures(currentStruct, inventory).toString())
-              )
-            }} />
+              if (inventory.length === 0) {
+                Alert.alert(
+                  'Empty Sound Inventory',
+                  'Please add some sounds to your sound inventory to see your possible syllable structures'
+                )
+              } else if (hasEmptyFeatures(currentStruct)) {
+                Alert.alert(
+                  'Incomplete Features',
+                  'Please add features for every sound in the structure'
+                )
+              } else {
+                Alert.alert(
+                  'Possible structures',
+                  'With these features, these structures are allowed: '.concat(generatePossibleStructures(currentStruct, inventory).toString())
+                )
+              }
+            }}>
+            <Text style={styles.generateButtonText}>Generate Possible Structures</Text>
+          </TouchableOpacity>
         </View>
       )
     }
@@ -202,21 +225,6 @@ function SyllableScreen({ route, navigation }) {
         <Text style={isInManual ? styles.toggledText : styles.untoggledText}>Manual Entry Mode</Text>
       </View>
       {getCurrentView()}
-      <Button
-        title='Print params'
-        onPress={() => console.log(route.params)} />
-      <Button
-        title='Save'
-        onPress={() => {
-          const { data, index, ...trueParams } = route.params;
-          save(key, trueParams);
-        }} />
-      <Button
-        title='Back'
-        onPress={() => {
-          const { data, index, ...trueParams } = route.params;
-          navigation.navigate('Phonotactics', trueParams);
-        }} />
     </View>
   )
 }
@@ -237,7 +245,8 @@ const styles = StyleSheet.create({
   toggleView: {
     flexDirection: 'row',
     alignItems: 'center',
-    margin: 5
+    margin: 5,
+    justifyContent: 'center'
   },
   title: {
     color: 'mediumaquamarine',
@@ -335,6 +344,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     padding: 4
+  },
+  generateButton: {
+    height: 40,
+    width: 280,
+    borderRadius: 10,
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    shadowColor: 'black',
+    shadowOffset: { height: 2, width: 2 },
+    backgroundColor: 'mediumaquamarine',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    margin: 5
+  },
+  generateButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center'
   }
 })
 
