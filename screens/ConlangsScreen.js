@@ -595,6 +595,9 @@ function ConlangsScreen({ navigation }) {
         }
       ],
       lexicon: [],
+      lastLexKey: {
+        lastKey: '0'
+      },
       lexiconIsSortedByEnglish: false
     });
     save(MASTERKEY, langsList);

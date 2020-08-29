@@ -1,14 +1,10 @@
 //TODO Add checks to see if the sounds they pick are in their language
-//TODO get rid of the crappy dropdown, make your own modal
-//TODO relocate the features array to a constant in the Sounds module
 import React, { useState, useLayoutEffect } from 'react';
 import { Text, View, Button, StyleSheet, TouchableOpacity, Alert, ScrollView, Modal, SafeAreaView } from 'react-native';
 import { TextInput, Switch, FlatList } from 'react-native-gesture-handler';
 import { save } from '../reference/Storage';
 import { generatePossibleStructures } from '../reference/Generator';
 import { FEATURES } from '../reference/Sounds'
-
-const features = ['+consonantal', '-consonantal', '+syllabic', '-syllabic', '+sonorant', '-sonorant']
 
 const toFlatListData = (arr) => {
   let data = []

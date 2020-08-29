@@ -1,5 +1,3 @@
-//TODO update data structure and generateKey method to actually generate and keep track of unique keys
-//TODO add a notes field to each entry
 import React, { useState, useLayoutEffect } from 'react';
 import { Text, View, Button, Modal, StyleSheet, SafeAreaView } from 'react-native';
 import { FlatList, Switch, TextInput, TouchableOpacity } from 'react-native-gesture-handler';
@@ -17,16 +15,16 @@ const sortLex = (lex, isEnglish) => {
 }
 
 function LexiconScreen({ route, navigation }) {
-  const { key, title, description, sylStructures, inventory, lexicon, lexiconIsSortedByEnglish } = route.params;
+  const { key, title, description, sylStructures, inventory, lexicon, lastLexKey, lexiconIsSortedByEnglish } = route.params;
 
   const [search, setSearch] = useState('');
   const [visibleLexicon, setVisibleLexicon] = useState(sortLex([...lexicon], lexiconIsSortedByEnglish));
   const [modalVisible, setModalVisible] = useState(false);
   const [conlangAddition, setConlangAddition] = useState('');
   const [englishAddition, setEnglishAddition] = useState('');
-  const [currentKey, setCurrentKey] = useState(-1);
-  const [conlangIsFocused, setConlangIsFocused] = useState(false);
-  const [englishIsFocused, setEnglishIsFocused] = useState(false);
+  const [notes, setNotes] = useState('');
+  const [focused, setFocused] = useState('');
+  const [currentKey, setCurrentKey] = useState('-1');
 
   // This Effect creates a Save button in the navigation bar
   useLayoutEffect(() => {
@@ -51,7 +49,7 @@ function LexiconScreen({ route, navigation }) {
   // current: String of the word in the currently sorted language
   // secondary: String of the word in the not currently sorted language
   // k: String of the key of the lexicon entry
-  const Item = ({ current, secondary, k }) => {
+  const Item = ({ current, secondary, notes, k }) => {
     return (
       <TouchableOpacity
         style={styles.entry}
@@ -63,6 +61,7 @@ function LexiconScreen({ route, navigation }) {
             setConlangAddition(current);
             setEnglishAddition(secondary);
           }
+          setNotes(notes);
           setCurrentKey(k);
           setModalVisible(true);
         }}
@@ -88,13 +87,13 @@ function LexiconScreen({ route, navigation }) {
       return (
         <FlatList
           data={visibleLexicon}
-          renderItem={({ item }) => <Item current={item.meaning} secondary={item.word} k={item.key} />} />
+          renderItem={({ item }) => <Item current={item.meaning} secondary={item.word} notes={item.notes} k={item.key} />} />
       )
     } else {
       return (
         <FlatList
           data={visibleLexicon}
-          renderItem={({ item }) => <Item current={item.word} secondary={item.meaning} k={item.key} />} />
+          renderItem={({ item }) => <Item current={item.word} secondary={item.meaning} notes={item.notes} k={item.key} />} />
       )
     }
   }
@@ -116,22 +115,48 @@ function LexiconScreen({ route, navigation }) {
   }
 
   const generateKey = () => {
-    return lexicon.length.toString();
+    let newKeyInt = parseInt(lastLexKey.lastKey) + 1;
+    let newKey = newKeyInt.toString();
+    lastLexKey.lastKey = newKey;
+    return newKey;
   }
 
-  const updateLex = (wrd, mean, k) => {
-    if (k === -1) {
+  const updateLex = (wrd, mean, note, k) => {
+    if (k === '-1') {
+      let newKey = generateKey();
       lexicon.push({
-        key: generateKey(),
+        key: newKey,
         word: wrd,
-        meaning: mean
+        meaning: mean,
+        notes: note
       });
     } else {
-      lexicon[parseInt(k)] = {
+      let idx = lexicon.findIndex((e) => e.key === k);
+      lexicon[idx] = {
         key: k,
         word: wrd,
-        meaning: mean
+        meaning: mean,
+        notes: note
       };
+    }
+  }
+
+  const removeEntry = (k) => {
+    let idx = lexicon.findIndex((e) => e.key === k);
+    lexicon.splice(idx, 1);
+    updateSearch('');
+    setModalVisible(false);
+  }
+
+  const removeButton = (shouldShow) => {
+    if (shouldShow) {
+      return (
+        <TouchableOpacity
+          style={styles.delete}
+          onPress={() => removeEntry(currentKey)} >
+          <Text style={styles.deleteText}>Delete Word</Text>
+        </TouchableOpacity>
+      )
     }
   }
 
@@ -164,13 +189,19 @@ function LexiconScreen({ route, navigation }) {
               <TouchableOpacity
                 style={{ padding: 5 }}
                 onPress={() => {
-                  setModalVisible(false)
+                  setFocused('');
+                  setModalVisible(false);
                 }}>
                 <Text style={styles.button}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={{ padding: 5 }}
-                onPress={() => setModalVisible(false)}>
+                onPress={() => {
+                  updateLex(conlangAddition, englishAddition, notes, currentKey);
+                  setFocused('');
+                  setModalVisible(false);
+                  toggleSwitch(lexiconIsSortedByEnglish);
+                }}>
                 <Text style={styles.button}>Save</Text>
               </TouchableOpacity>
             </SafeAreaView>
@@ -178,12 +209,12 @@ function LexiconScreen({ route, navigation }) {
           <Text style={styles.inputLabel}>Word in {title}:</Text>
           <View style={styles.conlangInputWrapper}>
             <TextInput
-              style={conlangIsFocused ? { ...styles.input, ...styles.focusedInput } : styles.input}
+              style={focused === 'conlang' ? { ...styles.input, ...styles.focusedInput } : styles.input}
               value={conlangAddition}
               autoCorrect={false}
               autoCapitalize={'none'}
-              onFocus={() => setConlangIsFocused(true)}
-              onBlur={() => setConlangIsFocused(false)}
+              onFocus={() => setFocused('conlang')}
+              onBlur={() => setFocused('')}
               onChangeText={text => setConlangAddition(text)} />
             <TouchableOpacity
               onPress={() => setConlangAddition(generate(sylStructures, inventory))}>
@@ -193,14 +224,28 @@ function LexiconScreen({ route, navigation }) {
           <Text style={styles.inputLabel}>Meaning in English:</Text>
           <View style={{ flexDirection: 'row' }}>
             <TextInput
-              style={englishIsFocused ? { ...styles.input, ...styles.focusedInput } : styles.input}
+              style={focused === 'english' ? { ...styles.input, ...styles.focusedInput } : styles.input}
               value={englishAddition}
               autoCorrect={false}
               autoCapitalize={'none'}
-              onFocus={() => setEnglishIsFocused(true)}
-              onBlur={() => setEnglishIsFocused(false)}
+              onFocus={() => setFocused('english')}
+              onBlur={() => setFocused('')}
               onChangeText={text => setEnglishAddition(text)} />
           </View>
+          <Text style={styles.inputLabel}>Notes:</Text>
+          <View style={{ flexDirection: 'row' }}>
+            <TextInput
+              style={focused === 'notes' ? { ...styles.input, ...styles.focusedInput, height: 200 } : { ...styles.input, height: 200 }}
+              value={notes}
+              autoCorrect={false}
+              autoCapitalize={'none'}
+              multiline={true}
+              placeholder={'Part of Speech, Usage, Example Sentence, etc.'}
+              onFocus={() => setFocused('notes')}
+              onBlur={() => setFocused('')}
+              onChangeText={text => setNotes(text)} />
+          </View>
+          {removeButton(currentKey !== '-1')}
         </View>
       </Modal>
       <TouchableOpacity
@@ -208,7 +253,8 @@ function LexiconScreen({ route, navigation }) {
         onPress={() => {
           setConlangAddition('');
           setEnglishAddition('');
-          setCurrentKey(-1);
+          setNotes('');
+          setCurrentKey('-1');
           setModalVisible(true);
         }}>
         <Text style={styles.plus}>+</Text>
@@ -326,6 +372,20 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     margin: 5,
     fontSize: 16
+  },
+  delete: {
+    backgroundColor: 'red',
+    alignItems: 'center',
+    alignSelf: 'center',
+    width: 150,
+    borderRadius: 10,
+    height: 40,
+    justifyContent: 'center'
+  },
+  deleteText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
   }
 })
 
