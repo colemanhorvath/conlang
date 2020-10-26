@@ -9,8 +9,16 @@ import PhonologyScreen from './screens/PhonologyScreen';
 import PhonotacticsScreen from './screens/PhonotacticsScreen';
 import SyllableScreen from './screens/SyllableScreen';
 import LexiconScreen from './screens/LexiconScreen';
+import Storage, { load, save } from './reference/Storage';
 
 const Stack = createStackNavigator();
+
+// Master key used to retrieve the saved conlangs and their respective keys
+const MASTERKEY = 'conlangs';
+// Key used to retrieve the last used key to find a new key
+const KEYOFKEYS = 'keyofkeys';
+//Key used to check if this is a new device
+const NEWUSER = 'newuser';
 
 function StackScreen() {
   return (
@@ -44,6 +52,17 @@ function StackScreen() {
 }
 
 export default function App() {
+  let newUser = load(NEWUSER);
+  newUser.then((result) => {
+    if (result == undefined) {
+      save(MASTERKEY, []);
+      save(KEYOFKEYS, '-1');
+      save(NEWUSER, 'False');
+    }
+  });
+  let key = load(KEYOFKEYS);
+  let langsList = load(MASTERKEY);
+
   return (
     <NavigationContainer>
       <StackScreen />

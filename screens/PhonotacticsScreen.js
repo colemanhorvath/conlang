@@ -2,6 +2,7 @@ import React, { useState, useLayoutEffect } from 'react';
 import { Text, View, Button, SectionList, StyleSheet, FlatList, Alert } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { save } from '../reference/Storage';
+import { HeaderBackButton } from '@react-navigation/stack';
 
 const addButtonData = [{ string: 'C', index: 0, key: 'reqOnset' }, { string: '(C)', index: 0, key: 'optOnset' }, { string: 'V', index: 1, key: 'reqNucleus' }, { string: '(V)', index: 1, key: 'optNucleus' }, { string: 'C', index: 2, key: 'reqCoda' }, { string: '(C)', index: 2, key: 'optCoda' },]
 
@@ -53,6 +54,15 @@ function PhonotacticsScreen({ route, navigation }) {
           }} >
           <Text style={styles.saveButton}>Save</Text>
         </TouchableOpacity>
+      ),
+      headerLeft: () => (
+        <HeaderBackButton
+          labelStyle={styles.saveButton}
+          tintColor='white'
+          label='Tools'
+          onPress={() => {
+            navigation.navigate('Tools', route.params);
+          }} />
       )
     }, [navigation])
   })
@@ -79,10 +89,15 @@ function PhonotacticsScreen({ route, navigation }) {
 
   // getCombinations(structure) is the array of all possible onsets/nuclei/codas
   // that can be produced from the entered structure
-  const getCombinations = (structure) => {
+  const getCombinations = (structure, index) => {
     let combos = [];
     let noParens = structure.replace(/[()]/g, '');
     let numRequired = noParens.length - ((structure.length - noParens.length) / 2);
+    if (numRequired == 0) {
+      sylStructures[index].canHaveNullStruct = 'true';
+    } else {
+      sylStructures[index].canHaveNullStruct = 'false';
+    }
     while (noParens.length > 0 && noParens.length >= numRequired) {
       combos.push(noParens);
       noParens = noParens.substring(1);
@@ -104,7 +119,7 @@ function PhonotacticsScreen({ route, navigation }) {
   // updateCurrentLang(syllableStruct, index) adds all combos possible from syllableStruct that are not already in the conlang data
   // index is 0 if the structure is the onset, 1 if the nucleus, 2 if coda
   const updateCurrentLang = (syllableStruct, index) => {
-    let combos = getCombinations(syllableStruct[index]);
+    let combos = getCombinations(syllableStruct[index], index);
     let sylElem = sylStructures[index].data;
     let i = 0;
     while (i < sylElem.length) {

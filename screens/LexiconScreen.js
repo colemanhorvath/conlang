@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect } from 'react';
-import { Text, View, Button, Modal, StyleSheet, SafeAreaView } from 'react-native';
+import { Text, View, Button, Modal, StyleSheet, SafeAreaView, Alert } from 'react-native';
 import { FlatList, Switch, TextInput, TouchableOpacity } from 'react-native-gesture-handler';
 import { generate } from '../reference/Generator';
 import { save } from '../reference/Storage';

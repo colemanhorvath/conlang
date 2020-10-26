@@ -1,5 +1,5 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
-import { TouchableOpacity, StyleSheet, Text, View, Button, SafeAreaView } from 'react-native';
+import { TouchableOpacity, StyleSheet, Text, View, Button, SafeAreaView, Alert } from 'react-native';
 import { save } from '../reference/Storage';
 import { SOUNDS } from '../reference/Sounds';
 import { FlatList } from 'react-native-gesture-handler';
@@ -132,6 +132,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between'
   },
   list: {
+    marginBottom: 120
   },
   columns: {
     justifyContent: 'space-around'

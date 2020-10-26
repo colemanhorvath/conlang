@@ -24,8 +24,19 @@ const convertFeatureArray = (arr) => {
 // generateStructure(form, inventory) is a syllable structure (i.e. onset, nucleus, or coda)
 // that conforms to the data in form and uses sounds in array inventory
 const generateStructure = (form, inventory) => {
+  if (JSON.stringify(form) == '{}') {
+    return '';
+  }
+
   if (form.isManual) {
-    return form.manualEntries[getRandomInt(form.manualEntries.length)];
+    if (form.manualEntries.length == 0) {
+      Alert.alert(
+        "One of your structures has no manual entries"
+      );
+      return '';
+    } else {
+      return form.manualEntries[getRandomInt(form.manualEntries.length)];
+    }
   } else {
     let soundFeatures;
     let structure = [];
@@ -33,7 +44,7 @@ const generateStructure = (form, inventory) => {
       let validSounds = getValidSounds(soundFeatures, inventory)
       if (validSounds.length === 0) {
         Alert.alert(
-          "No valid word could be created"
+          "One of your structures creates no possible syllables"
         );
         return '';
       }
@@ -47,7 +58,6 @@ const generateStructure = (form, inventory) => {
   }
 }
 
-
 // generate(sylStructures, inventory) is a syllable that matches one of the 
 // forms detailed in sylStructures and is comprised of sounds in inventory.
 export const generate = (sylStructures, inventory) => {
@@ -55,17 +65,34 @@ export const generate = (sylStructures, inventory) => {
   let nuclei = sylStructures[1].data;
   let codas = sylStructures[2].data;
 
-
-  if (onsets.length === 0 || nuclei.length === 0 || codas.length === 0) {
+  if (onsets.length === 0 && nuclei.length === 0 && codas.length === 0) {
     Alert.alert(
-      "No valid word could be created"
+      "No valid word could be created1"
     );
     return '';
   }
 
-  let onsetForm = onsets[getRandomInt(onsets.length)];
-  let nucleusForm = nuclei[getRandomInt(nuclei.length)];
-  let codaForm = codas[getRandomInt(codas.length)];
+  let onsetCap = onsets.length;
+  let nucleusCap = nuclei.length;
+  let codaCap = codas.length;
+
+  if (sylStructures[0].canHaveNullStruct === 'true') {
+    onsetCap++;
+  }
+  if (sylStructures[1].canHaveNullStruct === 'true') {
+    nucleusCap++;
+  }
+  if (sylStructures[2].canHaveNullStruct === 'true') {
+    codaCap++;
+  }
+
+  let onsetNum = getRandomInt(onsetCap);
+  let nucleusNum = getRandomInt(nucleusCap);
+  let codaNum = getRandomInt(codaCap);
+
+  let onsetForm = (onsetNum == onsets.length) ? {} : onsets[onsetNum];
+  let nucleusForm = (nucleusNum == nuclei.length) ? {} : nuclei[nucleusNum];
+  let codaForm = (codaNum == codas.length) ? {} : codas[codaNum];
 
   let onset = generateStructure(onsetForm, inventory);
   let nucleus = generateStructure(nucleusForm, inventory);

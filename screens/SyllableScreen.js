@@ -116,9 +116,11 @@ function SyllableScreen({ route, navigation }) {
               </TouchableOpacity>
             </SafeAreaView>
             <Text style={{ ...styles.label, textAlign: 'center', marginBottom: 10 }} > Select all features for this sound</Text>
-            <FlatList
-              data={toFlatListData(FEATURES)}
-              renderItem={({ item }) => <FeatureSelection str={item.value} key={item.key} />} />
+            <View style={{ marginBottom: 275 }}>
+              <FlatList
+                data={toFlatListData(FEATURES)}
+                renderItem={({ item }) => <FeatureSelection str={item.value} key={item.key} />} />
+            </View>
           </View>
         </Modal>
         <TouchableOpacity
